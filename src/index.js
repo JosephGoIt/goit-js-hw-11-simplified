@@ -1,5 +1,6 @@
 import axios from "axios";
 import Notiflix from "notiflix";
+import { Notify } from "notiflix/build/notiflix-notify-aio.js";
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
