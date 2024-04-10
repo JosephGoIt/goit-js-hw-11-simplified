@@ -19,6 +19,7 @@ const options = {
     }
 };
 
+const gallerypage = document.querySelector("pagination");
 const galleryEl = document.querySelector(".gallery");
 const searchInputEl = document.querySelector('input[name="searchQuery"]');
 const searchFormEl = document.getElementById("search-form");
@@ -26,9 +27,11 @@ const lightbox = new SimpleLightbox('.lightbox', {
     captionsData: 'alt',
     captionDelay:250,
 });
+let currentPage = 1;
 let totalHits = 0;
 let reachedEnd = false;
-
+console.log(options.params.per_page);
+console.log(currentPage);
 function generatePhotoCard({webformatURL, largeImageURL, tags, likes, views, comments, downloads}) {
     return `<a href="${largeImageURL}" class="lightbox">
                 <div class="photo-card">
@@ -43,13 +46,14 @@ function generatePhotoCard({webformatURL, largeImageURL, tags, likes, views, com
             </a>`;
 }
 
-function renderGallery(hits) {
+function renderGallery(hits, totalHits) {
     const markup = hits.map(generatePhotoCard).join('');
     galleryEl.insertAdjacentHTML('beforeend', markup);
     if (options.params.page * options.params.per_page >= totalHits && !reachedEnd) {
         Notify.info("Sorry, you have reached the end of the results.");
         reachedEnd = true;
     }
+    renderPagination(totalHits);
     lightbox.refresh();
 }
 
@@ -77,7 +81,8 @@ async function handleSubmit(e) {
             notifyUser(`Sorry, there are no images matching your search. Please try again.`, 'failure');
         } else {
             notifyUser(`Hooray! We found ${totalHits} images.`);
-            renderGallery(hits);
+            console.log(totalHits);
+            renderGallery(hits, totalHits);
         }
         searchInputEl.value = '';
     } catch (err) {
@@ -96,10 +101,27 @@ async function loadMore() {
     }
 }
 
-function handleScroll() {
-    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-    if (scrollTop + clientHeight >= scrollHeight) {
-        loadMore();
+// function handleScroll() {
+//     const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+//     if (scrollTop + clientHeight >= scrollHeight) {
+//         loadMore();
+//     }
+// }
+
+function renderPagination(totalHits) {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    console.log(totalHits);
+    const totalPages = Math.ceil(totalHits / options.params.per_page);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.addEventListener('click', () => {
+            currentPage = i;
+            loadMore();
+        });
+        pagination.appendChild(pageButton);
     }
 }
 
